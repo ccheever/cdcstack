@@ -21,6 +21,7 @@ rule here exists to defend the loop.
 | **Rules** | `rules/RULES.md` | One page, hard-capped. Budgets stated as trades. |
 | **Scope fence** | `rules/NOT-DOING.md` | What this project deliberately does not do, kept longer than the doing-list. |
 | **Issues** | *this repo* | Filesystem issues — `issues/YYYYMMDD-slug.md`, closed by moving to `issues/closed/` with a resolution. Format, tooling, and checker owned here (`docs/issues.md`). Zero dependencies, plain Node. |
+| **Skills** | *this repo* | Claude Code skills. `orchestrate` runs a multi-lane program to completion: model routing, fleet dispatch, a 20-minute judgment tick, and a milestone/percent/ETA report with a program total. |
 
 ## The composition is the point
 
