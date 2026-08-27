@@ -12,7 +12,11 @@ Each rule is **[check]** (enforced in CI) or **[review]** (enforced by a human).
 ## Budgets — every budget is a trade, not a limit
 
 - **5 blocking checks, 60s total.** A sixth requires deleting one, in the same PR. **[check]**
-- **20 active design docs.** A 21st requires archiving one. **[check]**
+- **15 documents in the working set** (`llp/current/`). A 16th requires archiving one —
+  which is just removing the link. **[check]**
+- **10 documents in the foundation** (`llp/foundation/`). The kernel an agent orients
+  from. The corpus itself is uncapped: it is memory, and memory that binds nothing is
+  free. **[check]**
 - **This file: 700 words.** If it grows, something becomes a check or stops being a rule. **[check]**
 - **1,500 lines per source file.** Generated files exempt — and generated files are built,
   not committed. **[check]**

@@ -52,6 +52,13 @@ per second, batch completion — whatever your users actually feel. `caps` fails
 row names a real measurement. There is no sensible default here and pretending otherwise
 would teach people the file is decorative.
 
+**The cap is on the working set, not the corpus.** `llp/current/` is the project's
+declared working set and `llp/foundation/` is the kernel an agent orients from — together
+they are what every task actually pays for. The corpus behind them is memory, and memory
+that binds nothing is free. Capping the total instead would tax exactly the exploration
+that produces good documents; capping the overlay taxes only the failure to collapse it.
+Archiving is removing a link, so the document never moves.
+
 **Retrofits declare a baseline.** Adopting into a repository with history means the caps
 are violated on arrival — 55 design docs against a 20-doc cap, 132 files over the line
 limit. Set the doc cap to today's count, and write `baseline N` after the line rule: the
