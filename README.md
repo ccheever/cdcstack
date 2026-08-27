@@ -20,7 +20,7 @@ rule here exists to defend the loop.
 | **LLP** | `ccheever/llp` | Linked Literate Programming — numbered design docs with types, statuses, and a review process. Installed via `llp-adopt`. Composed, not owned. |
 | **Rules** | `rules/RULES.md` | One page, hard-capped. Budgets stated as trades. |
 | **Scope fence** | `rules/NOT-DOING.md` | What this project deliberately does not do, kept longer than the doing-list. |
-| **Tickets** | *this repo* | Filesystem tickets — `issues/YYYYMMDD-slug.md`, closed by moving to `issues/closed/` with a resolution. Format, tooling, and checker owned here (`docs/tickets.md`). Zero dependencies, plain Node. |
+| **Issues** | *this repo* | Filesystem issues — `issues/YYYYMMDD-slug.md`, closed by moving to `issues/closed/` with a resolution. Format, tooling, and checker owned here (`docs/issues.md`). Zero dependencies, plain Node. |
 
 ## The composition is the point
 

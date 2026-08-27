@@ -1,6 +1,6 @@
 #!/usr/bin/env bun
 /**
- * cdcstack filesystem-ticket tool: scaffold, close, validate, mechanically repair.
+ * cdcstack filesystem-issue tool: scaffold, close, validate, mechanically repair.
  *
  * @system @ref cdcstack (file-based issue tracking)
  *
@@ -23,7 +23,7 @@
  * implementation of the rules.
  *
  * The rules themselves are unchanged from cdcstack. Nothing here relaxes what a
- * conformant ticket is; it only stops rejecting equivalent surface syntax (a
+ * conformant issue is; it only stops rejecting equivalent surface syntax (a
  * leading `- ` on a metadata line) and makes conformance cheap to reach.
  *
  * THE SAFETY CONTRACT for every write path (`--fix` and `close`): author text is
@@ -52,7 +52,7 @@ const QUALIFIER_LEAD = /^[\s—–:;,.\-]+/;
 
 /**
  * The pre-LLP-0361 header shape: a plain bullet list with no bold markers
- * (`- Status: open`). Nine tickets in this shape landed on main on 2026-08-26
+ * (`- Status: open`). Nine issues in this shape landed on main on 2026-08-26
  * from two lanes whose authors never saw the check run, so the failure
  * population has two halves — a misplaced field, and an older format entirely.
  * `--fix` normalises the second mechanically: the label changes, the author's
@@ -118,7 +118,7 @@ export function findLegacyHeader(parsed) {
  *
  * The captured name is NOT trimmed, so `** Impact:** 3` stays unrecognised
  * exactly as it was under the previous whole-file regex — widening that would
- * put new reds on tickets that pass today.
+ * put new reds on issues that pass today.
  */
 const METADATA_LINE = /^(?:[-*+][ \t]+)?\*\*([^*:]+):\*\*[ \t]*(.*?)[ \t]*$/;
 
@@ -136,7 +136,7 @@ function isContinuation(line) {
   return line.trim() !== '' && !isHeading(line) && !METADATA_LINE.test(line);
 }
 
-export function parseTicket(text) {
+export function parseIssue(text) {
   const lines = text.split(/\r?\n/);
   const eol = text.includes('\r\n') ? '\r\n' : '\n';
 
@@ -153,7 +153,7 @@ export function parseTicket(text) {
   }
   // Two different regions, for two different jobs. `blockStart`/`blockEnd` is
   // the CONTIGUOUS run that decides which lines continue a value. `bodyStart`
-  // is where prose begins, and decides whether a metadata line is the ticket's
+  // is where prose begins, and decides whether a metadata line is the issue's
   // own header (safe to rewrite) or a quotation inside the body (never touch).
   let bodyStart = lines.length;
   for (let index = 0; index < lines.length; index += 1) {
@@ -177,7 +177,7 @@ export function parseTicket(text) {
     const continuations = lines.slice(index + 1, endIndex + 1).map((line) => line.trim());
     // The previous whole-file regex let `\s*` cross a newline, so an empty
     // `**Systems:**` took its value from the following line. Preserved, or
-    // tickets that are green today would go red.
+    // issues that are green today would go red.
     const value = match[2] !== '' ? match[2] : (continuations[0] ?? '');
     const fullValue = [match[2], ...continuations].filter(Boolean).join(' ');
 
@@ -240,7 +240,7 @@ function isIsoDate(value) {
 /**
  * @returns {Array<{path:string,line?:number,code:string,message:string,found?:string,required?:string,hint?:string,fixable:boolean}>}
  */
-export function validateTicket(path, text) {
+export function validateIssue(path, text) {
   const problems = [];
   const closed = path.startsWith('issues/closed/');
   const directory = closed ? 'issues/closed/' : 'issues/';
@@ -256,7 +256,7 @@ export function validateTicket(path, text) {
     });
   }
 
-  const parsed = parseTicket(text);
+  const parsed = parseIssue(text);
   const status = parsed.fields.get('Status');
   // A whole header in the pre-LLP-0361 plain-bullet shape reads as "every field
   // is missing". Say what is actually wrong, once, instead of four times.
@@ -330,8 +330,8 @@ export function validateTicket(path, text) {
           ? `\`--fix\` rewrites the token to \`Closed\` and moves ${remainder ? `\`${truncate(remainder)}\`` : 'any qualifier'} verbatim into **Resolution:** (or into a labelled body note if **Resolution:** is already set). It never rewords it.`
           : `\`--fix\` rewrites the token to \`Open\` and moves ${remainder ? `\`${truncate(remainder)}\`` : 'any qualifier'} verbatim into a labelled body note directly under the header.`
         : closed
-          ? 'cdcstack ticket statuses are exactly `Open` and `Closed`. Set it to `Closed` and put the detail in **Resolution:**.'
-          : 'This ticket is under `issues/` but its Status reads as closed. Either move it properly — `node scripts/issue.mjs close <path> --resolution "…"` — or set **Status:** Open.',
+          ? 'cdcstack issue statuses are exactly `Open` and `Closed`. Set it to `Closed` and put the detail in **Resolution:**.'
+          : 'This issue is under `issues/` but its Status reads as closed. Either move it properly — `node scripts/issue.mjs close <path> --resolution "…"` — or set **Status:** Open.',
     });
   }
 
@@ -339,7 +339,7 @@ export function validateTicket(path, text) {
     const section = findResolutionSection(parsed);
     push({
       code: 'missing:Resolution',
-      message: 'A ticket under `issues/closed/` must carry a one-line **Resolution:** metadata line.',
+      message: 'An issue under `issues/closed/` must carry a one-line **Resolution:** metadata line.',
       required: '**Resolution:** <fixed-by commit/PR | "obsolete" | "graduated to <tracker-id>">',
       fixable: false,
       hint: section
@@ -459,7 +459,7 @@ function detectMarker(parsed) {
  * matters: a present-but-empty `**Date:**` must not gain a second `**Date:**`.
  */
 function upsertHeaderField(lines, parsed, name, value, { after, first } = {}) {
-  // Only ever rewrite a line inside the metadata block: a ticket that QUOTES
+  // Only ever rewrite a line inside the metadata block: an issue that QUOTES
   // `**Status:** …` in its prose must not have its prose edited.
   const existing = parsed.fields.get(name);
   if (existing?.beforeBody) return replaceField(lines, existing, value);
@@ -490,7 +490,7 @@ function insertBodyNote(lines, parsed, note) {
     insertAt,
     0,
     '',
-    `Status note (moved verbatim off the **Status:** line by \`node scripts/issue.mjs\`; cdcstack ticket statuses are exactly \`Open\` or \`Closed\`): ${note}`,
+    `Status note (moved verbatim off the **Status:** line by \`node scripts/issue.mjs\`; cdcstack issue statuses are exactly \`Open\` or \`Closed\`): ${note}`,
   );
   return next;
 }
@@ -509,11 +509,11 @@ function render(parsed, lines) {
  *
  * @returns {{text:string, changes:string[]}}
  */
-export function fixTicket(path, text, { liftResolution = false } = {}) {
+export function fixIssue(path, text, { liftResolution = false } = {}) {
   const closed = path.startsWith('issues/closed/');
   const expectedStatus = closed ? 'Closed' : 'Open';
   const changes = [];
-  let parsed = parseTicket(text);
+  let parsed = parseIssue(text);
   let lines = [...parsed.lines];
   let pendingNote = '';
 
@@ -534,7 +534,7 @@ export function fixTicket(path, text, { liftResolution = false } = {}) {
         `normalised ${legacy.rows.length} pre-LLP-0361 bullet field${legacy.rows.length === 1 ? '' : 's'} to \`**Name:** value\`` +
           (renamed.length > 0 ? ` (renamed ${renamed.join(', ')}; values untouched)` : ''),
       );
-      parsed = parseTicket(render(parsed, lines));
+      parsed = parseIssue(render(parsed, lines));
       lines = [...parsed.lines];
     }
   }
@@ -552,7 +552,7 @@ export function fixTicket(path, text, { liftResolution = false } = {}) {
     }
   }
 
-  parsed = parseTicket(render(parsed, lines));
+  parsed = parseIssue(render(parsed, lines));
   lines = [...parsed.lines];
 
   if (pendingNote) {
@@ -563,7 +563,7 @@ export function fixTicket(path, text, { liftResolution = false } = {}) {
       lines = insertBodyNote(lines, parsed, pendingNote);
       changes.push(`moved the Status-line text into a labelled body note verbatim: \`${truncate(pendingNote)}\``);
     }
-    parsed = parseTicket(render(parsed, lines));
+    parsed = parseIssue(render(parsed, lines));
     lines = [...parsed.lines];
   }
 
@@ -572,7 +572,7 @@ export function fixTicket(path, text, { liftResolution = false } = {}) {
     if (derived) {
       lines = upsertHeaderField(lines, parsed, 'Date', derived, { after: 'Author' });
       changes.push(`set **Date:** ${derived} from the filename prefix`);
-      parsed = parseTicket(render(parsed, lines));
+      parsed = parseIssue(render(parsed, lines));
       lines = [...parsed.lines];
     }
   }
@@ -593,7 +593,7 @@ export function fixTicket(path, text, { liftResolution = false } = {}) {
 // ---------------------------------------------------------------------------
 
 const HEADER_TEMPLATE = `
-── the cdcstack ticket header ──────────────────────────────────────────────
+── the cdcstack issue header ──────────────────────────────────────────────
 # <one-line title>
 
 **Status:** Open                  exactly \`Open\`, or exactly \`Closed\` under issues/closed/
@@ -614,7 +614,7 @@ never read as metadata.
 
 const COMMANDS_FOOTER = `
   repair the mechanical parts   node scripts/issue.mjs check --fix
-  file a ticket correctly       node scripts/issue.mjs new "<title>" --systems "<a, b>"
+  file an issue correctly       node scripts/issue.mjs new "<title>" --systems "<a, b>"
   close one correctly           node scripts/issue.mjs close <path> --resolution "<one line>"`;
 
 export function formatReport(problems) {
@@ -651,7 +651,7 @@ export function formatReport(problems) {
 // Repository-level check
 // ---------------------------------------------------------------------------
 
-export function trackedTicketPaths(root) {
+export function trackedIssuePaths(root) {
   const tracked = spawnSync('git', ['ls-files', '-z', '--', 'issues/*.md', 'issues/closed/*.md'], {
     cwd: root,
     encoding: 'utf8',
@@ -666,21 +666,21 @@ export function trackedTicketPaths(root) {
 export function runFormatCheck(root, { fix = false, liftResolution = false, paths = null } = {}) {
   const problems = [];
   const fixed = [];
-  const all = trackedTicketPaths(root);
+  const all = trackedIssuePaths(root);
   const scoped = Array.isArray(paths) && paths.length > 0;
   const selected = scoped ? all.filter((path) => paths.includes(path)) : all;
   for (const path of selected) {
     const absolute = resolve(root, path);
     let text = readFileSync(absolute, 'utf8');
     if (fix) {
-      const result = fixTicket(path, text, { liftResolution });
+      const result = fixIssue(path, text, { liftResolution });
       if (result.changes.length > 0 && result.text !== text) {
         writeFileSync(absolute, result.text);
         text = result.text;
         fixed.push({ path, changes: result.changes });
       }
     }
-    problems.push(...validateTicket(path, text));
+    problems.push(...validateIssue(path, text));
   }
 
   return { problems, fixed, scanned: selected.length };
@@ -701,7 +701,7 @@ export function slugify(title) {
     .join('-');
 }
 
-export function renderNewTicket({ title, status = 'Open', systems, author, date, severity, related, body }) {
+export function renderNewIssue({ title, status = 'Open', systems, author, date, severity, related, body }) {
   const header = [`# ${title}`, '', `**Status:** ${status}`, `**Systems:** ${systems}`];
   if (severity) header.push(`**Severity:** ${severity}`);
   header.push(`**Author:** ${author}`, `**Date:** ${date}`);
@@ -733,7 +733,7 @@ function commandNew(root, args) {
   const systems = optionalText(args, 'systems');
   if (!systems) {
     return fail(
-      'A ticket needs **Systems:** and a machine cannot infer it.\n' +
+      'An issue needs **Systems:** and a machine cannot infer it.\n' +
         '  node scripts/issue.mjs new "Router drops the back gesture" --systems "exact-router, Apple host"',
     );
   }
@@ -743,7 +743,7 @@ function commandNew(root, args) {
   if (!/^[a-z0-9-]+$/.test(slug)) return fail(`slug \`${slug}\` must be lowercase, digits, and hyphens only`);
   const filename = `${date.replace(/-/g, '')}-${slug}.md`;
   const path = `issues/${filename}`;
-  // Both halves of the lifecycle share one filename space: an open ticket that
+  // Both halves of the lifecycle share one filename space: an open issue that
   // collides with a CLOSED one turns `close` into a file-destroying move.
   for (const candidate of [path, `issues/closed/${filename}`]) {
     if (existsSync(resolve(root, candidate))) {
@@ -752,7 +752,7 @@ function commandNew(root, args) {
   }
   const author = optionalText(args, 'author') ?? gitUserName(root);
   if (!author) return fail('Could not determine **Author:** — pass --author "<who filed it>".');
-  const text = renderNewTicket({
+  const text = renderNewIssue({
     title,
     systems,
     author,
@@ -761,9 +761,9 @@ function commandNew(root, args) {
     related: optionalText(args, 'related') ?? undefined,
     body: optionalText(args, 'body') ?? undefined,
   });
-  const problems = validateTicket(path, text);
+  const problems = validateIssue(path, text);
   if (problems.length > 0) {
-    console.error(`scaffold produced a non-conformant ticket — this is a bug in issue.mjs:\n${formatReport(problems)}`);
+    console.error(`scaffold produced a non-conformant issue — this is a bug in issue.mjs:\n${formatReport(problems)}`);
     return 1;
   }
   mkdirSync(dirname(resolve(root, path)), { recursive: true });
@@ -773,7 +773,7 @@ function commandNew(root, args) {
   return 0;
 }
 
-function resolveTicketPath(root, given) {
+function resolveIssuePath(root, given) {
   const candidates = given.includes('/')
     ? [given]
     : [`issues/${given}`, `issues/${given}.md`, `issues/closed/${given}`, `issues/closed/${given}.md`];
@@ -789,13 +789,13 @@ function commandClose(root, args) {
   const resolution = optionalText(args, 'resolution');
   if (!resolution) {
     return fail(
-      'A closed ticket needs a one-line **Resolution:** and this tool will not write one for you.\n' +
+      'A closed issue needs a one-line **Resolution:** and this tool will not write one for you.\n' +
         '  --resolution "fixed by <commit/PR>" | "obsolete" | "graduated to <tracker-id>"',
     );
   }
   if (/[\r\n]/.test(resolution)) return fail('--resolution must be ONE line; put the detail in the body.');
-  const path = resolveTicketPath(root, given);
-  if (!path) return fail(`no such ticket: ${given}`);
+  const path = resolveIssuePath(root, given);
+  if (!path) return fail(`no such issue: ${given}`);
   if (path.startsWith('issues/closed/')) return fail(`${path} is already closed.`);
   const target = path.replace(/^issues\//, 'issues/closed/');
   const targetAbsolute = resolve(root, target);
@@ -804,7 +804,7 @@ function commandClose(root, args) {
   }
 
   const absolute = resolve(root, path);
-  let parsed = parseTicket(readFileSync(absolute, 'utf8'));
+  let parsed = parseIssue(readFileSync(absolute, 'utf8'));
   let lines = [...parsed.lines];
   const carried = [];
 
@@ -818,11 +818,11 @@ function commandClose(root, args) {
     lines = replaceField(lines, status, 'Closed');
     if (leftover) carried.push(leftover);
   }
-  parsed = parseTicket(render(parsed, lines));
+  parsed = parseIssue(render(parsed, lines));
   lines = [...parsed.lines];
   if (!parsed.fields.get('Status')) {
     lines = upsertHeaderField(lines, parsed, 'Status', 'Closed', { first: true });
-    parsed = parseTicket(render(parsed, lines));
+    parsed = parseIssue(render(parsed, lines));
     lines = [...parsed.lines];
   }
 
@@ -831,15 +831,15 @@ function commandClose(root, args) {
   lines = upsertHeaderField(lines, parsed, 'Resolution', resolution.trim(), { after: 'Status' });
 
   for (const note of carried) {
-    parsed = parseTicket(render(parsed, lines));
+    parsed = parseIssue(render(parsed, lines));
     lines = insertBodyNote([...parsed.lines], parsed, note);
   }
 
-  parsed = parseTicket(render(parsed, lines));
+  parsed = parseIssue(render(parsed, lines));
   const text = render(parsed, parsed.lines);
-  const problems = validateTicket(target, text);
+  const problems = validateIssue(target, text);
   if (problems.length > 0) {
-    console.error(`Cannot close ${path} — the reshaped ticket is still non-conformant:\n\n${formatReport(problems)}`);
+    console.error(`Cannot close ${path} — the reshaped issue is still non-conformant:\n\n${formatReport(problems)}`);
     return 1;
   }
 
@@ -862,7 +862,7 @@ function commandCheck(root, args) {
     liftResolution: Boolean(args['lift-resolution']),
     paths: args._,
   });
-  if (args.fix) console.log(`--fix: ${scanned} ticket${scanned === 1 ? '' : 's'} scanned, ${fixed.length} rewritten.`);
+  if (args.fix) console.log(`--fix: ${scanned} issue${scanned === 1 ? '' : 's'} scanned, ${fixed.length} rewritten.`);
   for (const entry of fixed) {
     console.log(`fixed ${entry.path}`);
     for (const change of entry.changes) console.log(`    ${change}`);
@@ -872,7 +872,7 @@ function commandCheck(root, args) {
     console.error(formatReport(problems));
     return 1;
   }
-  console.log('Ticket format passed.');
+  console.log('Issue format passed.');
   return 0;
 }
 
@@ -901,7 +901,7 @@ function parseArgs(argv) {
   return args;
 }
 
-const USAGE = `cdcstack filesystem tickets — see docs/tickets.md.
+const USAGE = `cdcstack filesystem issues — see docs/issues.md.
 
   node scripts/issue.mjs new "<title>" --systems "<a, b>" [--author …] [--severity P2]
                                       [--related …] [--slug …] [--date YYYY-MM-DD] [--body …]
