@@ -34,6 +34,27 @@ cannot block a pull request.
 Install either half alone and you get half a system. LLP without the caps is how you get
 the 8.2M words. Caps without LLP is how you lose the reason the documents existed.
 
+## Defaults, and how you override them
+
+Two kinds of number live in `RULES.md`, and they work differently.
+
+**Loop numbers ship with defaults** — incremental rebuild, test-what-you-changed, gate
+suite, full build, and the structural caps (5 blocking checks, 20 design docs, 1,500 lines
+per file, 700 words in the rules file itself). These are near-universal because they are
+about *human feedback latency*, which does not vary by domain. A 15-second rebuild is bad
+in any language. The defaults are deliberately a little tight: adopting this should sting
+slightly at first, or it isn't doing anything.
+
+**Product numbers have no default and cannot be blank.** Cold start, p99 latency, frames
+per second, batch completion — whatever your users actually feel. `caps` fails until the
+row names a real measurement. There is no sensible default here and pretending otherwise
+would teach people the file is decorative.
+
+**Override by editing the file.** There is no separate config: `caps` parses `RULES.md`
+itself, so the numbers cannot drift from the document that explains them. Changing a
+default is a one-line diff with a reason next to it, which is exactly the review you want
+on a decision to go slower.
+
 ## What it deliberately leaves out
 
 Lane manifests, authority maps, framework decision logs, debt ledgers, priority scoring,

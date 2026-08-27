@@ -14,7 +14,7 @@ Each rule is **[check]** (enforced in CI) or **[review]** (enforced by a human).
 - **5 blocking checks, 60s total.** A sixth requires deleting one, in the same PR. **[check]**
 - **20 active design docs.** A 21st requires archiving one. **[check]**
 - **This file: 700 words.** If it grows, something becomes a check or stops being a rule. **[check]**
-- **<N> lines per source file.** Generated files exempt — and generated files are built,
+- **1,500 lines per source file.** Generated files exempt — and generated files are built,
   not committed. **[check]**
 
 A limit gets exceptions. A trade doesn't: it forces someone to name what matters less.
@@ -31,15 +31,21 @@ A limit gets exceptions. A trade doesn't: it forces someone to name what matters
 
 ## Time budgets
 
-Fill these in. Track them every commit. A regression is a P0 with a name on it.
+Tracked every commit. A regression is a P0 with a name on it. The loop rows ship with
+defaults because human attention has a fixed timescale regardless of what you are
+building; tighten or loosen them deliberately, in this file, with a reason.
 
-| | |
+| | default |
 |---|---|
-| Incremental rebuild after a one-line edit | |
-| Test what you just changed | |
-| Blocking gate suite | |
-| Full build, warm cache | |
-| *<the product-facing latency that actually matters>* | |
+| Incremental rebuild after a one-line edit | 15s |
+| Test what you just changed | 30s |
+| Blocking gate suite | 60s |
+| Full build, warm cache | 5 min |
+| **<the product latency that actually matters>** | **required — you must name one** |
+
+The last row has no default and cannot be left blank: `caps` fails until it names a real
+measurement. A stack that ships opinions about your build and none about your product is
+just vocabulary.
 
 ## Scope
 
