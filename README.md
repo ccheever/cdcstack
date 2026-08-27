@@ -17,10 +17,10 @@ rule here exists to defend the loop.
 
 | Component | Source | What it is |
 |---|---|---|
-| **LLP** | `ccheever/llp` | Linked Literate Programming — numbered design docs with types, statuses, and a review process. Installed via `llp-adopt`. |
+| **LLP** | `ccheever/llp` | Linked Literate Programming — numbered design docs with types, statuses, and a review process. Installed via `llp-adopt`. Composed, not owned. |
 | **Rules** | `rules/RULES.md` | One page, hard-capped. Budgets stated as trades. |
 | **Scope fence** | `rules/NOT-DOING.md` | What this project deliberately does not do, kept longer than the doing-list. |
-| **Tickets** | `scripts/issue.mjs` | Filesystem tickets — `issues/YYYYMMDD-slug.md`, closed by moving to `issues/closed/` with a resolution. No tracker required. |
+| **Tickets** | *this repo* | Filesystem tickets — `issues/YYYYMMDD-slug.md`, closed by moving to `issues/closed/` with a resolution. Format, tooling, and checker owned here (`docs/tickets.md`). Zero dependencies, plain Node. |
 
 ## The composition is the point
 
