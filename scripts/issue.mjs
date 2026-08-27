@@ -2,7 +2,7 @@
 /**
  * cdcstack filesystem-issue tool: scaffold, close, validate, mechanically repair.
  *
- * @system @ref cdcstack (file-based issue tracking)
+ * @system @ref docs/issues.md — the format this tool enforces
  *
  * Why this exists: `observability-issues-format` went red on main from four
  * separate lanes on 2026-08-26 alone, and three of those four authors HAD
