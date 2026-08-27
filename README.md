@@ -52,6 +52,13 @@ per second, batch completion — whatever your users actually feel. `caps` fails
 row names a real measurement. There is no sensible default here and pretending otherwise
 would teach people the file is decorative.
 
+**Retrofits declare a baseline.** Adopting into a repository with history means the caps
+are violated on arrival — 55 design docs against a 20-doc cap, 132 files over the line
+limit. Set the doc cap to today's count, and write `baseline N` after the line rule: the
+number of pre-existing violations may not grow, and driving it down is deliberate work. A
+check that is red on the day it lands gets switched off within a week, which is strictly
+worse than a cap set where you actually are.
+
 **Override by editing the file.** There is no separate config: `caps` parses `RULES.md`
 itself, so the numbers cannot drift from the document that explains them. Changing a
 default is a one-line diff with a reason next to it, which is exactly the review you want

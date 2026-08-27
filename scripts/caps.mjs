@@ -117,6 +117,12 @@ export function runCaps(root = process.cwd()) {
 
   // ---- source file size ---------------------------------------------------
   const maxLines = budget(rules, 'budget:lines', /([\d,]+)\s*lines per source file/i, 'lines per source file');
+  // A retrofit into an existing codebase declares how many files are already
+  // over the cap. The count may not grow; driving it down is deliberate work.
+  // Without this an adoption is red on day one, and a check that is red on day
+  // one gets switched off in a week.
+  const lineBaseline = /lines per source file[^\n]*baseline\s+([\d,]+)/i.exec(rules);
+  const allowedOversize = lineBaseline ? Number(lineBaseline[1].replace(/,/g, '')) : 0;
   const sources = files.filter((f) => CODE_EXTENSIONS.has(extname(f)));
   let scanned = 0;
   let generated = 0;
@@ -138,8 +144,16 @@ export function runCaps(root = process.cwd()) {
     fail('sources:all-skipped', `All ${sources.length} source files were skipped as generated.`,
       'That is almost certainly a bad marker pattern rather than a repository of generated code.');
   }
-  for (const { f, lines } of oversize.sort((a, b) => b.lines - a.lines)) {
-    fail('cap:lines', `${f} is ${lines} lines, over the cap of ${maxLines}.`, null);
+  if (allowedOversize > 0) counted.push(`oversize files: ${oversize.length} of ${allowedOversize} allowed by baseline`);
+  if (oversize.length > allowedOversize) {
+    // Name only the overflow, sorted largest first — listing all 132 files of a
+    // retrofit buries the one that broke the baseline.
+    for (const { f, lines } of oversize.sort((a, b) => b.lines - a.lines).slice(0, oversize.length - allowedOversize)) {
+      fail('cap:lines', `${f} is ${lines} lines, over the cap of ${maxLines}.`,
+        allowedOversize > 0 ? `Baseline allows ${allowedOversize} oversize files; there are ${oversize.length}.` : null);
+    }
+  } else if (allowedOversize > 0 && oversize.length < allowedOversize) {
+    counted.push(`  baseline can be tightened to ${oversize.length}`);
   }
 
   return { problems, counted };
