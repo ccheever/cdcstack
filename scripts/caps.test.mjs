@@ -23,6 +23,7 @@ const GOOD_RULES = `# Rules
 - **10 documents in the foundation.** **[check]**
 - **This file: 700 words.** **[check]**
 - **1,500 lines per source file.** **[check]**
+- **1,100 words per skill.** **[check]**
 
 ## Time budgets
 
@@ -100,6 +101,13 @@ const cases = [
     null],
   ['vendored source is not held to the line cap',
     { 'rules/RULES.md': GOOD_RULES, 'vendor/brotli/enc.c': 'x\n'.repeat(9000), 'src/ok.js': 'const a = 1;\n' }, null],
+  ['an oversize skill fails',
+    { 'rules/RULES.md': GOOD_RULES, 'skills/x/SKILL.md': 'word '.repeat(2000) }, 'cap:skill'],
+  ['a skill within cap passes',
+    { 'rules/RULES.md': GOOD_RULES, 'skills/x/SKILL.md': '# x\n\nshort enough\n' }, null],
+  ['a missing skill budget fails closed',
+    { 'rules/RULES.md': GOOD_RULES.replace('- **1,100 words per skill.** **[check]**\n', '') },
+    'budget:skill-words'],
   ['a clean repository passes', { 'rules/RULES.md': GOOD_RULES, 'src/ok.js': 'const a = 1;\n' }, null],
 ];
 

@@ -174,6 +174,30 @@ export function runCaps(root = process.cwd()) {
     counted.push(`  baseline can be tightened to ${oversize.length}`);
   }
 
+  // ---- skills -------------------------------------------------------------
+  // A skill is loaded on demand, so it does not pay the rules file's always-on
+  // cost and is exempt from that cap. It is not exempt from displacement: an
+  // uncapped on-demand file is how a rules page becomes a corpus, one reasonable
+  // section at a time.
+  const maxSkillWords = budget(rules, 'budget:skill-words', /([\d,]+)\s*words per skill/i, 'words per skill');
+  const skills = files
+    .filter((f) => /^skills\/[^/]+\/SKILL\.md$/.test(f))
+    .map((f) => {
+      const abs = resolve(root, f);
+      const w = existsSync(abs) ? readFileSync(abs, 'utf8').split(/\s+/).filter(Boolean).length : 0;
+      return { f, w };
+    })
+    .sort((a, b) => b.w - a.w);
+  counted.push(`skills: ${skills.length}` + (skills.length
+    ? `, largest ${skills[0].w} words${maxSkillWords !== null ? ` of ${maxSkillWords}` : ''}`
+    : ''));
+  for (const { f, w } of skills) {
+    if (maxSkillWords !== null && w > maxSkillWords) {
+      fail('cap:skill', `${f} is ${w} words, over the cap of ${maxSkillWords}.`,
+        'A skill grows by displacement. If a section earned its place another one did not — or it should have been a check.');
+    }
+  }
+
   return { problems, counted };
 }
 

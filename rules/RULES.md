@@ -18,6 +18,8 @@ Each rule is **[check]** (enforced in CI) or **[review]** (enforced by a human).
   from. The corpus itself is uncapped: it is memory, and memory that binds nothing is
   free. **[check]**
 - **This file: 700 words.** If it grows, something becomes a check or stops being a rule. **[check]**
+- **1,100 words per skill.** Loaded on demand, so a skill escapes this file's cap — not
+  the discipline behind it. **[check]**
 - **1,500 lines per source file.** Generated files exempt — and generated files are built,
   not committed. **[check]**
 
