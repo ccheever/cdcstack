@@ -25,7 +25,7 @@ unsafe or would waste the work if wrong.
 | Work | Model |
 |---|---|
 | Implementation | codex `gpt-6.1-sol` — pick high / xhigh / ultra per task |
-| Code review | **both** grok `4.6` **and** codex `gpt-6.1-sol xhigh` |
+| Code review | **both** grok `4.7` **and** codex `gpt-6.1-sol xhigh` |
 | Everything else | your call |
 
 Reviews are **mutually blind**: two families, neither shown the other's findings, both on

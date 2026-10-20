@@ -301,7 +301,7 @@ export function validateIssue(path, text) {
             : 'The filing date. This filename carries no usable date, so a human has to write it.'
           : field === 'Systems'
             ? 'Comma-separated subsystems, e.g. `Verification, Tooling`. A machine cannot infer this.'
-            : 'Who filed it, e.g. `Claude Opus 5, directed by Charlie Cheever`.',
+            : 'Who filed it, e.g. `Claude Opus 5.5, directed by Charlie Cheever`.',
     });
   }
 
