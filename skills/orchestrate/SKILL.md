@@ -26,6 +26,7 @@ unsafe or would waste the work if wrong.
 |---|---|
 | Implementation | codex `gpt-6.1-sol` — pick high / xhigh / ultra per task |
 | Code review | **both** grok `4.7` **and** codex `gpt-6.1-sol xhigh` |
+| Hard directional decisions, RFC/LLP refinement | **the panel** — see the `panel` skill; it replaces super-refine |
 | Everything else | your call |
 
 Reviews are **mutually blind**: two families, neither shown the other's findings, both on
